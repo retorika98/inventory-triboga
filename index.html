@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Belanja Periode</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { background:#f5f7fa; }
+.logo { height:60px; }
+</style>
+</head>
+<body><div class="container mt-4"><!-- HEADER --><div class="text-center mb-3">
+    <img src="logo.png" class="logo mb-2">
+    <h4>YAYASAN TRI BOGA NUSANTARA</h4>
+    <small>Laporan Belanja Periode</small>
+</div><div class="card shadow">
+<div class="card-body"><!-- PERIODE --><div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text" id="periodeInput" class="form-control" placeholder="Nama Periode">
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100" onclick="buatPeriode()">Buat/Pilih</button>
+    </div>
+    <div class="col-md-3">
+        <select id="periodeSelect" class="form-control" onchange="gantiPeriode()"></select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-danger w-100" onclick="hapusPeriode()">Hapus</button>
+    </div>
+</div><div class="mb-3 d-flex gap-2">
+<button class="btn btn-success" onclick="tambahData()">+ Tambah</button>
+<button class="btn btn-outline-success" onclick="exportExcel()">Excel</button>
+<button class="btn btn-outline-danger" onclick="exportPDF()">PDF</button>
+</div><!-- TABLE --><div class="table-responsive">
+<table class="table table-bordered">
+<thead class="table-dark">
+<tr>
+<th>Tanggal</th><th>Supplier</th><th>Nama</th><th>Qty</th><th>Harga</th><th>Total</th><th>Status</th><th>Pembayaran</th><th>Utang</th><th>Aksi</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+<tfoot>
+<tr><th colspan="5" class="text-end">Total</th><th id="grandTotal">0</th><th colspan="4"></th></tr>
+<tr><th colspan="9" class="text-end text-danger">Total Hutang</th><th id="totalHutang">0</th></tr>
+</tfoot>
+</table>
+</div><!-- CHART --><div class="row mt-4">
+<div class="col-md-6">
+<canvas id="chartPengeluaran"></canvas>
+</div>
+<div class="col-md-6">
+<canvas id="chartAlokasi"></canvas>
+</div>
+</div></div>
+</div>
+</div><!-- MODAL --><div class="modal fade" id="modalInput">
+<div class="modal-dialog"><div class="modal-content p-3">
+<input type="hidden" id="editIndex">
+<input type="date" id="tanggal" class="form-control mb-2">
+<input type="text" id="supplier" class="form-control mb-2" placeholder="Supplier">
+<input type="text" id="nama" class="form-control mb-2" placeholder="Nama">
+<input type="number" id="qty" class="form-control mb-2" placeholder="Qty">
+<input type="number" id="harga" class="form-control mb-2" placeholder="Harga">
+<select id="status" class="form-control mb-2"><option>Cash</option><option>Tempo</option></select>
+<select id="pembayaran" class="form-control mb-2"><option>Lunas</option><option>Belum Lunas</option></select>
+<button class="btn btn-primary" onclick="simpanData()">Simpan</button>
+</div></div></div><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf"></script><script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script><script>
+let semuaData = JSON.parse(localStorage.getItem('laporanPeriode')) || {};
+let periodeAktif=null;
+let modal=new bootstrap.Modal(document.getElementById('modalInput'));
+let chart1, chart2;
+
+function simpan(){localStorage.setItem('laporanPeriode',JSON.stringify(semuaData));}
+
+function buatPeriode(){let p=periodeInput.value;if(!p)return; if(!semuaData[p])semuaData[p]=[];periodeAktif=p;simpan();load();}
+
+function hapusPeriode(){if(!periodeAktif)return; if(confirm('Hapus periode ini?')){delete semuaData[periodeAktif];periodeAktif=null;simpan();load();}}
+
+function load(){let s=periodeSelect;s.innerHTML='';Object.keys(semuaData).forEach(p=>{s.innerHTML+=`<option ${p===periodeAktif?'selected':''}>${p}</option>`});render();}
+
+function gantiPeriode(){periodeAktif=periodeSelect.value;render();}
+
+function tambahData(){editIndex.value='';modal.show();}
+
+function simpanData(){let i=editIndex.value;let obj={
+ t:tanggal.value,s:supplier.value,n:nama.value,q:+qty.value,h:+harga.value,st:status.value,pb:pembayaran.value
+};obj.total=obj.q*obj.h;obj.utang=(obj.st==='Tempo'&&obj.pb==='Belum Lunas')?obj.total:0;
+
+if(i===''){semuaData[periodeAktif].push(obj);}else{semuaData[periodeAktif][i]=obj;}
+
+simpan();render();modal.hide();}
+
+function editData(i){let d=semuaData[periodeAktif][i];editIndex.value=i;
+ tanggal.value=d.t;supplier.value=d.s;nama.value=d.n;qty.value=d.q;harga.value=d.h;status.value=d.st;pembayaran.value=d.pb;
+ modal.show();}
+
+function hapusData(i){if(confirm('Hapus data?')){semuaData[periodeAktif].splice(i,1);simpan();render();}}
+
+function render(){let tb=tbody;tb.innerHTML='';let data=semuaData[periodeAktif]||[];
+let total=0,hutang=0;
+let kategori={};
+
+data.forEach((d,i)=>{
+ total+=d.total;hutang+=d.utang;
+ kategori[d.n]=(kategori[d.n]||0)+d.total;
+ tb.innerHTML+=`<tr>
+<td>${d.t}</td><td>${d.s}</td><td>${d.n}</td><td>${d.q}</td>
+<td>Rp ${d.h.toLocaleString()}</td><td>Rp ${d.total.toLocaleString()}</td>
+<td>${d.st}</td><td>${d.pb}</td><td>Rp ${d.utang.toLocaleString()}</td>
+<td>
+<button class='btn btn-sm btn-warning' onclick='editData(${i})'>Edit</button>
+<button class='btn btn-sm btn-danger' onclick='hapusData(${i})'>Hapus</button>
+</td></tr>`;
+});
+
+grandTotal.innerText='Rp '+total.toLocaleString();
+totalHutang.innerText='Rp '+hutang.toLocaleString();
+
+// CHART
+let labels=Object.keys(kategori);
+let values=Object.values(kategori);
+
+if(chart1) chart1.destroy();
+chart1=new Chart(chartPengeluaran,{type:'bar',data:{labels:labels,datasets:[{label:'Pengeluaran',data:values}]}});
+
+if(chart2) chart2.destroy();
+chart2=new Chart(chartAlokasi,{type:'pie',data:{labels:labels,datasets:[{data:values}]}});
+}
+
+function exportExcel(){let ws=XLSX.utils.json_to_sheet(semuaData[periodeAktif]||[]);let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Laporan');XLSX.writeFile(wb,`Laporan_${periodeAktif}.xlsx`);}
+
+function exportPDF(){let doc=new jspdf.jsPDF();let data=semuaData[periodeAktif]||[];
+let rows=data.map(d=>[d.t,d.s,d.n,d.q,d.h,d.total,d.st,d.pb,d.utang]);
+doc.text(`Laporan ${periodeAktif}`,14,10);
+doc.autoTable({head:[["Tanggal","Supplier","Nama","Qty","Harga","Total","Status","Pembayaran","Utang"]],body:rows});
+doc.save(`Laporan_${periodeAktif}.pdf`);
+}
+
+load();
+</script></body>
+</html>
