@@ -213,7 +213,7 @@
 </script>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { 
         getAuth, 
         signInWithEmailAndPassword, 
@@ -468,6 +468,32 @@
         XLSX.utils.book_append_sheet(wb, ws, "Laporan");
         XLSX.writeFile(wb, `Laporan_${aktifPeriode}.xlsx`);
     };
+    document.getElementById('btnHapusPeriode').onclick = async () => {
+    if (!aktifPeriode) return alert("Pilih periode yang ingin dihapus!");
+
+    if (confirm(`Apakah Anda yakin ingin menghapus periode "${aktifPeriode}"? Semua data transaksi di periode ini TIDAK akan ikut terhapus otomatis di database.`)) {
+        try {
+            // 1. Cari ID dokumen periode berdasarkan namanya
+            const q = query(collection(db, "periode"), where("nama", "==", aktifPeriode));
+            const snap = await getDocs(q);
+            
+            // 2. Hapus dokumen tersebut
+            snap.forEach(async (d) => {
+                await deleteDoc(doc(db, "periode", d.id));
+            });
+
+            alert("Periode berhasil dihapus.");
+            
+            // 3. Refresh tampilan
+            aktifPeriode = ""; 
+            loadPeriode();
+            resetDashboard();
+            document.getElementById('tbody').innerHTML = ""; 
+        } catch (e) {
+            alert("Gagal menghapus periode: " + e.message);
+        }
+    }
+};
 </script>
 </body>
 </html>
