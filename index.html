@@ -3,166 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Keuangan - Tri Boga Nusantara</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <title>Sistem Keuangan Yayasan - Enterprise Edition</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* TEMA DASAR */
-        :root { --primary-dark: #2c3e50; --accent-gold: #ffc107; --soft-bg: #fff8f0; }
-        body { background-color: var(--soft-bg); font-family: 'Poppins', sans-serif; color: #4f3824; }
-
-        /* NAVBAR STYLE */
-        .navbar { background-color: #343a40 !important; }
-        .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.5rem; color: var(--accent-gold) !important; }
-        .nav-link { font-weight: 500; transition: 0.3s; }
-        .nav-link:hover { color: var(--accent-gold) !important; transform: translateY(-2px); }
-
-        /* HERO SECTION */
-        .hero-finance {
-            background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&auto=format&fit=crop');
-            background-size: cover; background-position: center;
-            color: white; text-align: center; padding: 60px 20px;
-            position: relative; max-width: 1200px; margin: 20px auto;
-            border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); overflow: hidden;
-        }
-        .hero-finance::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(44, 62, 80, 0.75); z-index: 1;
-        }
-        .hero-content { position: relative; z-index: 2; }
-        .hero-content h1 { font-family: 'Pacifico', cursive; font-size: 3rem; color: var(--accent-gold); }
-        
-        /* CARD & TABLES */
-        .card-stat { border: none; border-radius: 12px; color: white; transition: 0.3s; }
-        .bg-income { background: linear-gradient(45deg, #11998e, #38ef7d); }
-        .bg-food { background: linear-gradient(45deg, #f2994a, #f2c94c); }
-        .bg-op { background: linear-gradient(45deg, #cb2d3e, #ef473a); }
-        .table-container { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        
-        .nav-pills .nav-link.active { background-color: var(--primary-dark); color: var(--accent-gold); }
-        marquee { background: rgba(255,255,255,0.1); padding: 5px; border-radius: 50px; max-width: 700px; margin: 0 auto; }
+        body { background: #f5f7fa; font-family: 'Segoe UI', sans-serif; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .table-responsive { background: white; padding: 20px; border-radius: 12px; }
+        .total-card { transition: transform 0.2s; color: white; }
+        .total-card:hover { transform: translateY(-5px); }
+        th { white-space: nowrap; font-size: 0.85rem; text-transform: uppercase; }
+        td { font-size: 0.9rem; vertical-align: middle; }
+        #budgetChart { max-height: 180px; }
+        .forgot-link { font-size: 0.85rem; cursor: pointer; color: #6c757d; text-decoration: none; }
+        .forgot-link:hover { color: #0d6efd; text-decoration: underline; }
     </style>
 </head>
-<body>
+<body onload="resetLoginForm()">
 
-<!-- NAVIGASI -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="https://bek.link/gambarbebas/20250125-093203_Logo.webp" alt="Logo" style="height: 35px; margin-right: 10px;">
-            TBN Keuangan
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto text-center">
-                <li class="nav-item"><a class="nav-link active" href="#">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#section-main">Laporan</a></li>
-                <li class="nav-item ms-lg-3">
-                    <button class="btn btn-outline-warning btn-sm" onclick="window.print()">Cetak PDF</button>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<!-- HALAMAN LOGIN -->
+<div class="container mt-5" id="loginPage">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <h3 class="text-center mb-4">Login Yayasan</h3>
+                <input id="email" class="form-control mb-2" placeholder="Email" autocomplete="off">
+                <input id="password" type="password" class="form-control mb-3" placeholder="Password" autocomplete="new-password">
+                <button id="btnLogin" class="btn btn-primary w-100">Masuk</button>
+                
+                <div class="text-center mt-3">
+                    <a id="btnResetPassword" class="forgot-link">Lupa Password?</a>
+                </div>
 
-<!-- HERO -->
-<div class="hero-finance">
-    <div class="hero-content container">
-        <h1>Tri Boga Nusantara</h1>
-        <marquee scrollamount="5">
-            <p class="lead mb-0 text-white">Monitoring Pemasukan, Pengeluaran Bahan Baku, dan Biaya Operasional secara Real-Time.</p>
-        </marquee>
-        <div class="mt-4">
-            <button class="btn btn-warning fw-bold px-4 shadow" data-bs-toggle="modal" data-bs-target="#modalAdd" onclick="setMode('food')">
-                Input Belanja Hari Ini
-            </button>
+                <hr>
+                <h6 class="text-center">Daftar Akun Baru (Perlu Approval)</h6>
+                <input id="regEmail" class="form-control mb-2" placeholder="Email Baru" autocomplete="off">
+                <input id="regPassword" type="password" class="form-control mb-2" placeholder="Password Baru" autocomplete="new-password">
+                <button id="btnRegister" class="btn btn-outline-success w-100">Daftar Akun</button>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="container mb-5" id="section-main">
-    <!-- DASHBOARD KARTU -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card card-stat bg-income p-3 shadow-sm">
-                <small>Total Pemasukan</small>
-                <h3 id="topIncome">Rp 0</h3>
+<!-- HALAMAN APLIKASI -->
+<div class="container-fluid px-4 mt-4" id="app" style="display:none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>BELANJA BAHAN MAKANAN</h4>
+        <button id="btnLogout" class="btn btn-danger btn-sm">Keluar</button>
+    </div>
+
+    <!-- DASHBOARD TOTAL -->
+    <div class="row mb-3">
+        <div class="col-md-4 mb-2">
+            <div class="card p-3 bg-primary total-card">
+                <h6>Total Belanja (Periode)</h6>
+                <h3 id="totalGlobal">Rp 0</h3>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card card-stat bg-food p-3 shadow-sm">
-                <small>Belanja Bahan (HPP)</small>
-                <h3 id="topFood">Rp 0</h3>
+        <div class="col-md-4 mb-2">
+            <div class="card p-3 bg-success total-card">
+                <h6>Total Tunai/DP (Paid)</h6>
+                <h3 id="tunaiGlobal">Rp 0</h3>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card card-stat bg-op p-3 shadow-sm">
-                <small>Biaya Operasional</small>
-                <h3 id="topOp">Rp 0</h3>
+        <div class="col-md-4 mb-2">
+            <div class="card p-3 bg-warning total-card">
+                <h6>Total Hutang (Unpaid)</h6>
+                <h3 id="hutangGlobal">Rp 0</h3>
             </div>
         </div>
     </div>
 
-    <!-- TABS LAPORAN -->
-    <div class="table-container">
-        <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab">
-            <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-inc">Pemasukan</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-food">Belanja Bahan</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-op">Operasional</button>
-            </li>
-        </ul>
-
-        <div class="tab-content mt-3">
-            <!-- TAB PEMASUKAN -->
-            <div class="tab-pane fade show active" id="tab-inc">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold m-0">Data Pemasukan</h5>
-                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalAdd" onclick="setMode('income')">+ Pemasukan</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-dark"><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead>
-                        <tbody id="bodyInc"></tbody>
-                    </table>
-                </div>
+    <div class="card p-4">
+        <!-- KONTROL PERIODE -->
+        <div class="row g-2 mb-4">
+            <div class="col-md-3">
+                <label class="small fw-bold">Nama Periode Baru</label>
+                <input id="periodeInput" class="form-control" placeholder="Mei 2026">
             </div>
-
-            <!-- TAB BELANJA BAHAN -->
-            <div class="tab-pane fade" id="tab-food">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold m-0">Belanja Bahan Makanan</h5>
-                    <button class="btn btn-sm btn-warning text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalAdd" onclick="setMode('food')">+ Belanja</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover" id="tableFood">
-                        <thead class="table-dark"><tr><th>Tanggal</th><th>Item/Supplier</th><th>Total</th><th>Hutang</th><th>Aksi</th></tr></thead>
-                        <tbody id="bodyFood"></tbody>
-                    </table>
-                </div>
-                <button class="btn btn-outline-success btn-sm mt-3" onclick="exportExcel()">Export ke Excel</button>
+            <div class="col-md-2">
+                <label class="small fw-bold">Nominal Anggaran</label>
+                <input id="anggaranInput" type="number" class="form-control" placeholder="Rp">
             </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="btnBuatPeriode" class="btn btn-primary w-100">Buat</button>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold">Pilih Periode</label>
+                <select id="periodeSelect" class="form-select"></select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="btnHapusPeriode" class="btn btn-outline-danger w-100">Hapus</button>
+            </div>
+        </div>
 
-            <!-- TAB OPERASIONAL -->
-            <div class="tab-pane fade" id="tab-op">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold m-0">Biaya Operasional & Gaji</h5>
-                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalAdd" onclick="setMode('op')">+ Biaya Ops</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-dark"><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead>
-                        <tbody id="bodyOp"></tbody>
-                    </table>
+        <div class="mb-3">
+            <button id="btnTambah" class="btn btn-dark me-2">+ Tambah Transaksi</button>
+            <button id="btnExcel" class="btn btn-success">Ekspor Excel</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="mainTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Supplier</th>
+                        <th>Bahan</th>
+                        <th>Qty</th>
+                        <th>Satuan</th>
+                        <th>Total</th>
+                        <th>Bayar (DP)</th>
+                        <th>Hutang</th>
+                        <th>Ket</th>
+                        <th class="text-center no-export">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+                <tfoot class="table-light fw-bold">
+                    <tr>
+                        <td colspan="5">Ringkasan Tabel:</td>
+                        <td id="tBelanja">Rp 0</td>
+                        <td id="tTunai" class="text-success">Rp 0</td>
+                        <td id="tHutang" class="text-danger">Rp 0</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- ANALISIS BUDGET -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card p-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">Analisis Penggunaan Anggaran</h6>
+                        <span id="persenBudget" class="badge bg-secondary">0% Terpakai</span>
+                    </div>
+                    <div style="height: 120px;">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -170,44 +149,50 @@
 </div>
 
 <!-- MODAL INPUT -->
-<div class="modal fade" id="modalAdd" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="mTitle">Input Data</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div class="modal fade" id="modalInput" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Input Transaksi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="mType">
-                <div class="mb-3">
-                    <label class="small fw-bold">Tanggal</label>
-                    <input type="date" id="mDate" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label class="small fw-bold">Keterangan / Nama Barang</label>
-                    <input type="text" id="mDesc" class="form-control" placeholder="Contoh: Penjualan Katering / Ayam Broiler">
-                </div>
-                <div id="extraFood" style="display:none">
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold">Total Harga</label>
-                            <input type="number" id="mTotal" class="form-control">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold">Dibayar (DP)</label>
-                            <input type="number" id="mPay" class="form-control">
-                        </div>
+                <input type="hidden" id="editId">
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label class="form-label">Tanggal</label>
+                        <input type="date" id="tgl" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Supplier</label>
+                        <input id="supplier" class="form-control">
                     </div>
                 </div>
-                <div id="extraGeneral">
-                    <div class="mb-3">
-                        <label class="small fw-bold">Nominal</label>
-                        <input type="number" id="mAmount" class="form-control">
+                <div class="mb-2">
+                    <label class="form-label">Bahan Makanan</label>
+                    <input id="bahan" class="form-control">
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <label class="form-label">Qty</label>
+                        <input id="qty" type="number" class="form-control">
                     </div>
+                    <div class="col-8">
+                        <label class="form-label">Harga Satuan</label>
+                        <input id="satuanHarga" type="number" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-success">Jumlah Dibayar (Tunai/DP)</label>
+                    <input id="dpInput" type="number" class="form-control border-success">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Keterangan</label>
+                    <textarea id="keterangan" class="form-control"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-dark w-100 fw-bold" onclick="saveData()">Simpan Transaksi</button>
+                <button id="btnSimpan" class="btn btn-primary w-100">Simpan Data</button>
             </div>
         </div>
     </div>
@@ -216,77 +201,317 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-<script>
-    let storage = { income: [], food: [], op: [] };
-    const fmt = (v) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
+<script type="text/javascript">
+    function resetLoginForm() {
+        document.getElementById('email').value = "";
+        document.getElementById('password').value = "";
+        document.getElementById('regEmail').value = "";
+        document.getElementById('regPassword').value = "";
+    }
+</script>
 
-    function setMode(type) {
-        document.getElementById('mType').value = type;
-        const isFood = type === 'food';
-        document.getElementById('extraFood').style.display = isFood ? 'block' : 'none';
-        document.getElementById('extraGeneral').style.display = isFood ? 'none' : 'block';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword, 
+        onAuthStateChanged, 
+        signOut,
+        sendPasswordResetEmail 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, setDoc, getDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkID584kd9x0rZXpoRnrp0xwed7h7-mgA",
+        authDomain: "tri-boga.firebaseapp.com",
+        projectId: "tri-boga"
+    };
+
+    const appFB = initializeApp(firebaseConfig);
+    const auth = getAuth(appFB);
+    const db = getFirestore(appFB);
+    const modalUI = new bootstrap.Modal(document.getElementById('modalInput'));
+
+    let currentData = [];
+    let aktifPeriode = "";
+    let myChart = null;
+
+    const formatR = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+    // --- AUTH LOGIC ---
+    const loginAction = async () => {
+        const mail = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        if(!mail || !pass) return alert("Masukkan email dan password");
+        try {
+            const res = await signInWithEmailAndPassword(auth, mail, pass);
+            const userDoc = await getDoc(doc(db, "users", res.user.uid));
+            if (!(userDoc.exists() && userDoc.data().status === "approved")) {
+                await signOut(auth); 
+                alert("Akun belum disetujui Admin."); 
+            }
+        } catch (e) { alert("Login Gagal. Periksa kembali akun Anda."); }
+    };
+
+    document.getElementById('btnLogin').onclick = loginAction;
+
+    // FITUR ENTER KEY
+    ['email', 'password'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', (e) => { if (e.key === 'Enter') loginAction(); });
+    });
+
+    document.getElementById('btnResetPassword').onclick = async () => {
+        const mail = document.getElementById('email').value;
+        if (!mail) return alert("Masukkan email di kolom login terlebih dahulu.");
+        try {
+            await sendPasswordResetEmail(auth, mail);
+            alert("Email pemulihan terkirim!");
+        } catch (e) { alert("Gagal: " + e.message); }
+    };
+
+    document.getElementById('btnRegister').onclick = async () => {
+        const rMail = document.getElementById('regEmail').value;
+        const rPass = document.getElementById('regPassword').value;
+        if(!rMail || !rPass) return alert("Lengkapi data daftar!");
+        try {
+            const res = await createUserWithEmailAndPassword(auth, rMail, rPass);
+            await setDoc(doc(db, "users", res.user.uid), { email: rMail, status: "pending" });
+            alert("Pendaftaran berhasil! Tunggu approval.");
+            await signOut(auth);
+            resetLoginForm();
+        } catch (e) { alert(e.message); }
+    };
+
+    onAuthStateChanged(auth, user => {
+        document.getElementById('loginPage').style.display = user ? 'none' : 'block';
+        document.getElementById('app').style.display = user ? 'block' : 'none';
+        if(user) loadPeriode();
+    });
+
+    document.getElementById('btnLogout').onclick = () => signOut(auth);
+
+    // --- PERIODE LOGIC ---
+    document.getElementById('btnBuatPeriode').onclick = async () => {
+        const nama = document.getElementById('periodeInput').value;
+        const anggaran = document.getElementById('anggaranInput').value;
+        if(!nama || !anggaran) return alert("Lengkapi data periode!");
+        await addDoc(collection(db, "periode"), { nama, anggaran: Number(anggaran) });
+        alert("Periode dibuat.");
+        document.getElementById('periodeInput').value = "";
+        document.getElementById('anggaranInput').value = "";
+        loadPeriode();
+    };
+
+    async function loadPeriode() {
+        const snap = await getDocs(collection(db, "periode"));
+        const sel = document.getElementById('periodeSelect');
+        sel.innerHTML = '<option value="">-- Pilih Periode --</option>';
+        snap.forEach(d => sel.innerHTML += `<option value="${d.data().nama}">${d.data().nama}</option>`);
+        updateGlobal();
+    }
+
+    document.getElementById('periodeSelect').onchange = (e) => {
+        aktifPeriode = e.target.value;
+        loadLaporan();
+    };
+
+    // --- DATA & DASHBOARD LOGIC ---
+    async function updateGlobal() {
+        if (!aktifPeriode) { resetDashboard(); return; }
         
-        const titles = { income: 'Pemasukan Baru', food: 'Belanja Bahan Baku', op: 'Biaya Operasional Baru' };
-        document.getElementById('mTitle').innerText = titles[type];
+        // Ambil Anggaran
+        const qP = query(collection(db, "periode"), where("nama", "==", aktifPeriode));
+        const snapP = await getDocs(qP);
+        let budget = 0;
+        snapP.forEach(d => budget = d.data().anggaran);
+
+        // Hitung Transaksi
+        const qL = query(collection(db, "laporan"), where("periode", "==", aktifPeriode));
+        const snapL = await getDocs(qL);
+        let b = 0, t = 0, h = 0;
+        snapL.forEach(d => {
+            b += Number(d.data().total || 0);
+            t += Number(d.data().dp || 0);
+            h += Number(d.data().utang || 0);
+        });
+
+        document.getElementById('totalGlobal').innerText = formatR(b);
+        document.getElementById('tunaiGlobal').innerText = formatR(t);
+        document.getElementById('hutangGlobal').innerText = formatR(h);
+
+        const persen = budget > 0 ? Math.round((b / budget) * 100) : 0;
+        const badge = document.getElementById('persenBudget');
+        badge.innerText = `${persen}% Terpakai dari Anggaran ${formatR(budget)}`;
+        badge.className = `badge ${persen > 90 ? 'bg-danger' : 'bg-success'}`;
+        renderChart(b, budget);
     }
 
-    function saveData() {
-        const type = document.getElementById('mType').value;
+    function renderChart(terpakai, total) {
+        const ctx = document.getElementById('budgetChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Anggaran'],
+                datasets: [
+                    { label: 'Terpakai', data: [terpakai], backgroundColor: '#0d6efd' },
+                    { label: 'Sisa', data: [Math.max(0, total - terpakai)], backgroundColor: '#e9ecef' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true, display: false }, y: { stacked: true } }
+            }
+        });
+    }
+
+    async function loadLaporan() {
+        if(!aktifPeriode) return;
+        const q = query(collection(db, "laporan"), where("periode", "==", aktifPeriode));
+        const snap = await getDocs(q);
+        currentData = [];
+        snap.forEach(d => currentData.push({ id: d.id, ...d.data() }));
+        renderTable();
+    }
+
+    function renderTable() {
+        const tb = document.getElementById('tbody');
+        tb.innerHTML = "";
+        let tB = 0, tT = 0, tH = 0;
+        currentData.forEach(d => {
+            tB += d.total; tT += d.dp; tH += d.utang;
+            tb.innerHTML += `<tr>
+                <td>${d.tgl}</td>
+                <td>${d.supplier}</td>
+                <td>${d.bahan}</td>
+                <td>${d.qty}</td>
+                <td>${formatR(d.satuanHarga)}</td>
+                <td>${formatR(d.total)}</td>
+                <td class="text-success">${formatR(d.dp)}</td>
+                <td class="text-danger">${formatR(d.utang)}</td>
+                <td><small>${d.keterangan}</small></td>
+                <td class="text-center no-export">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editData('${d.id}')">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="hapusData('${d.id}')">Del</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('tBelanja').innerText = formatR(tB);
+        document.getElementById('tTunai').innerText = formatR(tT);
+        document.getElementById('tHutang').innerText = formatR(tH);
+        updateGlobal();
+    }
+
+    function resetDashboard() {
+        document.getElementById('totalGlobal').innerText = formatR(0);
+        document.getElementById('tunaiGlobal').innerText = formatR(0);
+        document.getElementById('hutangGlobal').innerText = formatR(0);
+        document.getElementById('persenBudget').innerText = "0% Terpakai";
+        if(myChart) myChart.destroy();
+    }
+
+    function clearModal() {
+        document.getElementById('editId').value = "";
+        document.getElementById('tgl').value = "";
+        document.getElementById('supplier').value = "";
+        document.getElementById('bahan').value = "";
+        document.getElementById('qty').value = "";
+        document.getElementById('satuanHarga').value = "";
+        document.getElementById('dpInput').value = "";
+        document.getElementById('keterangan').value = "";
+    }
+
+    document.getElementById('btnSimpan').onclick = async () => {
+        const id = document.getElementById('editId').value;
+        const qty = Number(document.getElementById('qty').value);
+        const sat = Number(document.getElementById('satuanHarga').value);
+        const dp = Number(document.getElementById('dpInput').value || 0);
+        
+        if (isNaN(qty) || isNaN(sat) || qty <= 0) return alert("Input Qty dan Harga belum benar.");
+
+        const tot = qty * sat;
         const data = {
-            id: Date.now(),
-            date: document.getElementById('mDate').value,
-            desc: document.getElementById('mDesc').value,
-            amount: Number(document.getElementById('mAmount').value || 0),
-            total: Number(document.getElementById('mTotal').value || 0),
-            pay: Number(document.getElementById('mPay').value || 0)
+            tgl: document.getElementById('tgl').value,
+            supplier: document.getElementById('supplier').value,
+            bahan: document.getElementById('bahan').value,
+            qty, satuanHarga: sat, total: tot, dp,
+            utang: tot - dp,
+            keterangan: document.getElementById('keterangan').value,
+            periode: aktifPeriode
         };
 
-        storage[type].push(data);
-        render();
-        bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
-        // Reset inputs
-        document.querySelectorAll('.modal-body input').forEach(i => i.value = "");
-    }
+        try {
+            if(id) await updateDoc(doc(db, "laporan", id), data);
+            else await addDoc(collection(db, "laporan"), data);
+            modalUI.hide();
+            loadLaporan();
+        } catch (e) { alert("Gagal Simpan: " + e.message); }
+    };
 
-    function render() {
-        let tInc = 0, tFood = 0, tOp = 0;
+    window.editData = (id) => {
+        const d = currentData.find(x => x.id === id);
+        document.getElementById('editId').value = d.id;
+        document.getElementById('tgl').value = d.tgl;
+        document.getElementById('supplier').value = d.supplier;
+        document.getElementById('bahan').value = d.bahan;
+        document.getElementById('qty').value = d.qty;
+        document.getElementById('satuanHarga').value = d.satuanHarga;
+        document.getElementById('dpInput').value = d.dp;
+        document.getElementById('keterangan').value = d.keterangan;
+        modalUI.show();
+    };
 
-        const fillTable = (id, dataList, type) => {
-            const b = document.getElementById(id);
-            b.innerHTML = "";
-            dataList.sort((x,y) => new Date(y.date) - new Date(x.date)).forEach(d => {
-                if(type === 'food') {
-                    tFood += d.total;
-                    b.innerHTML += `<tr><td>${d.date}</td><td><b>${d.desc}</b></td><td>${fmt(d.total)}</td><td class="text-danger">${fmt(d.total-d.pay)}</td><td><button class="btn btn-sm text-danger" onclick="del('${type}',${d.id})">Hapus</button></td></tr>`;
-                } else {
-                    if(type === 'income') tInc += d.amount; else tOp += d.amount;
-                    b.innerHTML += `<tr><td>${d.date}</td><td>${d.desc}</td><td>${fmt(d.amount)}</td><td><button class="btn btn-sm text-danger" onclick="del('${type}',${d.id})">Hapus</button></td></tr>`;
-                }
-            });
-        };
-
-        fillTable('bodyInc', storage.income, 'income');
-        fillTable('bodyFood', storage.food, 'food');
-        fillTable('bodyOp', storage.op, 'op');
-
-        document.getElementById('topIncome').innerText = fmt(tInc);
-        document.getElementById('topFood').innerText = fmt(tFood);
-        document.getElementById('topOp').innerText = fmt(tOp);
-    }
-
-    function del(type, id) {
-        if(confirm('Hapus data ini?')) {
-            storage[type] = storage[type].filter(x => x.id !== id);
-            render();
+    window.hapusData = async (id) => {
+        if(confirm("Hapus data transaksi ini?")) {
+            await deleteDoc(doc(db, "laporan", id));
+            loadLaporan();
         }
-    }
+    };
 
-    function exportExcel() {
-        const ws = XLSX.utils.table_to_sheet(document.getElementById('tableFood'));
+    document.getElementById('btnTambah').onclick = () => {
+        if(!aktifPeriode) return alert("Pilih periode!");
+        clearModal();
+        modalUI.show();
+    };
+
+    document.getElementById('btnExcel').onclick = () => {
+        const ws = XLSX.utils.table_to_sheet(document.getElementById('mainTable'));
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Laporan_Bahan");
-        XLSX.writeFile(wb, "Laporan_Belanja_TBN.xlsx");
-    }
+        XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+        XLSX.writeFile(wb, `Laporan_${aktifPeriode}.xlsx`);
+    };
+
+    document.getElementById('btnHapusPeriode').onclick = async () => {
+        if (!aktifPeriode) return alert("Pilih periode!");
+
+        if (confirm(`HAPUS PERIODE "${aktifPeriode}"?\nPeringatan: Semua data transaksi di periode ini juga akan dihapus permanen.`)) {
+            try {
+                // 1. Ambil semua transaksi periode ini
+                const qL = query(collection(db, "laporan"), where("periode", "==", aktifPeriode));
+                const snapL = await getDocs(qL);
+                
+                // 2. Gunakan WriteBatch untuk hapus massal (Atomic)
+                const batch = writeBatch(db);
+                snapL.forEach((d) => batch.delete(d.ref));
+                
+                // 3. Cari & Hapus dokumen periodenya
+                const qP = query(collection(db, "periode"), where("nama", "==", aktifPeriode));
+                const snapP = await getDocs(qP);
+                snapP.forEach((d) => batch.delete(d.ref));
+
+                await batch.commit();
+
+                alert("Periode dan semua datanya berhasil dibersihkan.");
+                aktifPeriode = ""; 
+                loadPeriode();
+                resetDashboard();
+                document.getElementById('tbody').innerHTML = ""; 
+            } catch (e) { alert("Gagal: " + e.message); }
+        }
+    };
 </script>
 </body>
 </html>
